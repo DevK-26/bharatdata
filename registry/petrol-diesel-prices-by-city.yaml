@@ -1,0 +1,36 @@
+# Dataset #3 (BLUEPRINT §4): petrol and diesel retail selling prices by city.
+#
+# TODO_VERIFY: BLUEPRINT lists the source as "data.gov.in / PPAC". It is not
+# yet confirmed that a daily city-wise petrol/diesel resource exists on
+# data.gov.in with an API. Confirm that first; if only PPAC publishes it,
+# switch to source_type: file with the PPAC download URL (and a file-based
+# fetcher) instead of inventing a resource id.
+#
+# expected_schema: a plausible best-effort shape (one row per city per day),
+# NOT confirmed against any real published file. Replace after inspection.
+slug: petrol-diesel-prices-by-city
+title: Petrol and Diesel Retail Prices by City
+description: >-
+  Daily retail selling price of petrol and diesel in Indian cities, in rupees
+  per litre, as published by the Petroleum Planning and Analysis Cell.
+sector: energy
+ministry: Ministry of Petroleum and Natural Gas (Petroleum Planning and Analysis Cell)
+source_type: api
+resource_id: null
+resource_id_status: TODO_VERIFY
+source_url: https://ppac.gov.in/   # TODO_VERIFY exact page / data.gov.in catalogue entry
+format: json
+refresh_cron: "0 2 * * *"   # daily, 02:00 UTC (07:30 IST)
+expected_schema:
+  date: date
+  city: string
+  state: string
+  petrol_price: float   # Rs per litre
+  diesel_price: float   # Rs per litre
+licence: GODL-India
+attribution: >-
+  Data: Petroleum Planning and Analysis Cell (PPAC), Ministry of Petroleum and
+  Natural Gas, Government of India, via the OGD Platform India (data.gov.in),
+  under the Government Open Data License – India (GODL). Cleaned and
+  republished by BharatData, which is not a Government of India product and
+  is not endorsed by it.

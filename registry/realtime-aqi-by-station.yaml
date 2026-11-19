@@ -1,0 +1,41 @@
+# Dataset #2 (BLUEPRINT §4): real-time air quality by monitoring station.
+#
+# TODO_VERIFY: locate the CPCB "Real time Air Quality Index from various
+# locations" resource on data.gov.in, copy its UUID, set resource_id and
+# resource_id_status: VERIFIED.
+#
+# expected_schema: best-effort from the commonly published shape (one row per
+# station per pollutant). Confirm against the live resource before VERIFIED.
+# Types below are CLEANED types; the source delivers values as strings and
+# uses "NA" for missing readings.
+slug: realtime-aqi-by-station
+title: Real-time Air Quality by Station
+description: >-
+  Latest pollutant readings (PM2.5, PM10, NO2, SO2, CO, ozone and others)
+  from air-quality monitoring stations across Indian cities, refreshed
+  hourly. One row per station and pollutant.
+sector: environment
+ministry: Ministry of Environment, Forest and Climate Change (Central Pollution Control Board)
+source_type: api
+resource_id: null
+resource_id_status: TODO_VERIFY
+source_url: https://data.gov.in/   # TODO_VERIFY exact catalogue page
+format: json
+refresh_cron: "5 * * * *"   # hourly, at minute 5 UTC
+expected_schema:
+  country: string
+  state: string
+  city: string
+  station: string
+  last_update: datetime
+  pollutant_id: string
+  pollutant_min: float
+  pollutant_max: float
+  pollutant_avg: float
+licence: GODL-India
+attribution: >-
+  Data: Central Pollution Control Board (CPCB), Ministry of Environment,
+  Forest and Climate Change, Government of India, via the OGD Platform India
+  (data.gov.in), under the Government Open Data License – India (GODL).
+  Cleaned and republished by BharatData, which is not a Government of India
+  product and is not endorsed by it.

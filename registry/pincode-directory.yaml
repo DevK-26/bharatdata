@@ -1,0 +1,41 @@
+# Dataset #5 (BLUEPRINT §4): All-India pincode directory (post offices).
+#
+# TODO_VERIFY: find the Department of Posts "All India Pincode Directory"
+# resource on data.gov.in, copy its UUID, set resource_id and
+# resource_id_status: VERIFIED.
+#
+# expected_schema: best-effort from the commonly published shape (one row per
+# post office). Confirm against the live resource. Pincodes are identifiers,
+# not numbers: they are typed string so leading zeros and formatting survive.
+slug: pincode-directory
+title: India Pincode Directory
+description: >-
+  Every post office in India with its six-digit pincode, district, state,
+  postal circle, region and division, and whether it delivers mail. Use it to
+  look up where a pincode is or which pincodes a district has.
+sector: postal
+ministry: Ministry of Communications (Department of Posts)
+source_type: api
+resource_id: null
+resource_id_status: TODO_VERIFY
+source_url: https://data.gov.in/   # TODO_VERIFY exact catalogue page
+format: json
+refresh_cron: "0 3 1 * *"   # monthly (static-ish), 1st at 03:00 UTC
+expected_schema:
+  circlename: string
+  regionname: string
+  divisionname: string
+  officename: string
+  pincode: string
+  officetype: string
+  delivery: string
+  district: string
+  statename: string
+  latitude: float
+  longitude: float
+licence: GODL-India
+attribution: >-
+  Data: Department of Posts, Ministry of Communications, Government of India,
+  via the OGD Platform India (data.gov.in), under the Government Open Data
+  License – India (GODL). Cleaned and republished by BharatData, which is not
+  a Government of India product and is not endorsed by it.

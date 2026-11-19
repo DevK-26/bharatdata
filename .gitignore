@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# Secrets — never commit a real .env (the data.gov.in API key lives there)
+.env
+
+# Raw zone: fetched payloads are data, not code. Kept on disk / in backups,
+# never in git. The directory itself is tracked via .gitkeep.
+data/raw/*
+!data/raw/.gitkeep
+
+# Clean zone + parquet lake (regenerable from raw)
+data/clean/
+data/parquet/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

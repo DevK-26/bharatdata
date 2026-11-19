@@ -1,0 +1,45 @@
+# Dataset #1 (BLUEPRINT §4): daily mandi (wholesale market) prices, Agmarknet.
+#
+# resource_id is NOT known with certainty here and is never guessed.
+# TODO_VERIFY: find the "Current Daily Price of Various Commodities from
+# Various Markets (Mandi)" resource on data.gov.in (catalogue search while
+# logged in), copy its resource UUID, then set resource_id and
+# resource_id_status: VERIFIED. Until then the fetcher refuses to run it.
+#
+# expected_schema is best-effort from the commonly published shape of this
+# resource. It must be confirmed against one live response (column names,
+# casing, and whether prices arrive as strings) before VERIFIED is set.
+# Types below are the CLEANED types; the source delivers most values as strings.
+slug: daily-mandi-prices-agmarknet
+title: Daily Mandi Prices (Agmarknet)
+description: >-
+  Wholesale prices of agricultural commodities reported each day by mandis
+  (regulated markets) across India: the lowest, highest and most common
+  (modal) price per quintal for each commodity, variety and market.
+sector: agriculture
+ministry: Ministry of Agriculture and Farmers Welfare
+source_type: api
+resource_id: null
+resource_id_status: TODO_VERIFY
+# Human-facing portal; TODO_VERIFY the exact catalogue page for this resource.
+source_url: https://data.gov.in/
+format: json
+refresh_cron: "30 1 * * *"   # daily, 01:30 UTC (07:00 IST)
+expected_schema:
+  state: string
+  district: string
+  market: string
+  commodity: string
+  variety: string
+  grade: string
+  arrival_date: date
+  min_price: float      # Rs per quintal
+  max_price: float      # Rs per quintal
+  modal_price: float    # Rs per quintal
+licence: GODL-India
+attribution: >-
+  Data: Directorate of Marketing and Inspection (Agmarknet), Ministry of
+  Agriculture and Farmers Welfare, Government of India, via the OGD Platform
+  India (data.gov.in), under the Government Open Data License – India (GODL).
+  Cleaned and republished by BharatData, which is not a Government of India
+  product and is not endorsed by it.

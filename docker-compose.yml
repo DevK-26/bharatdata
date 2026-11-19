@@ -1,0 +1,102 @@
+# BharatData — production stack for the Oracle Cloud VM.
+# Adapted from CSV Doctor's docker-compose.yml: same single-VM shape, Caddy is
+# the only public door; everything else is internal-only (`expose`, no `ports`).
+#
+# STATUS: written and syntax-validated; never brought up with `docker compose up`
+# in the sandbox it was written in. Treat the first real `up` as the real test.
+#
+# Not here yet (see BUILD-SPRINT.md): `web` (Next.js, Phase D) and a Celery Beat
+# scheduler (Phase B). Do not add them until that code exists.
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:-:80}
+    volumes:
+      - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: .
+    restart: unless-stopped
+    command: ["uvicorn", "bharatdata.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-bharatdata}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-bharatdata}
+      REDIS_URL: redis://redis:6379/0
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  ingest:
+    # Celery worker: fetches datasets into the raw zone. Same image as `api`.
+    build:
+      context: .
+    restart: unless-stopped
+    command: ["celery", "-A", "bharatdata.ingest.worker", "worker", "--loglevel=info"]
+    environment:
+      DATA_GOV_IN_API_KEY: ${DATA_GOV_IN_API_KEY:-}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-bharatdata}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-bharatdata}
+      REDIS_URL: redis://redis:6379/0
+      BHARATDATA_RAW_DIR: /data/raw
+    volumes:
+      # The immutable raw zone survives container rebuilds.
+      - raw_data:/data/raw
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bharatdata}
+      POSTGRES_USER: ${POSTGRES_USER:-bharatdata}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      # Runs once, on first start with an empty data volume.
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    expose:
+      - "6379"
+
+volumes:
+  caddy_data:
+  caddy_config:
+  pg_data:
+  redis_data:
+  raw_data:

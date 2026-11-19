@@ -1,0 +1,38 @@
+# Dataset #4 (BLUEPRINT §4): IMD rainfall (district / subdivision).
+#
+# TODO_VERIFY: BLUEPRINT says "district/subdivision" — decide which IMD
+# rainfall resource on data.gov.in is the MVP one (district-wise daily vs
+# subdivision-wise monthly), copy its UUID, set resource_id and
+# resource_id_status: VERIFIED.
+#
+# expected_schema: best-effort for a district-wise daily rainfall resource
+# (state, district, date, average rainfall in mm, reporting agency). If the
+# subdivision-wise monthly resource is chosen instead, this schema changes.
+# Confirm against the live resource.
+slug: imd-rainfall
+title: IMD Rainfall
+description: >-
+  Rainfall recorded across India by district, in millimetres, from the India
+  Meteorological Department's observation network. Useful for agriculture,
+  water planning and climate research.
+sector: weather
+ministry: Ministry of Earth Sciences (India Meteorological Department)
+source_type: api
+resource_id: null
+resource_id_status: TODO_VERIFY
+source_url: https://data.gov.in/   # TODO_VERIFY exact catalogue page
+format: json
+refresh_cron: "0 3 * * 1"   # weekly, Monday 03:00 UTC
+expected_schema:
+  state: string
+  district: string
+  date: date
+  avg_rainfall: float   # mm
+  agency_name: string
+licence: GODL-India
+attribution: >-
+  Data: India Meteorological Department (IMD), Ministry of Earth Sciences,
+  Government of India, via the OGD Platform India (data.gov.in), under the
+  Government Open Data License – India (GODL). Cleaned and republished by
+  BharatData, which is not a Government of India product and is not endorsed
+  by it.
