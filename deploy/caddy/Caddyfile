@@ -1,0 +1,30 @@
+# DOMAIN comes from .env — ":80" means IP-only HTTP mode, a real domain
+# like api.bharatdata.example.com means automatic HTTPS via Let's Encrypt.
+# Same pattern as CSV Doctor's Caddyfile.
+{$DOMAIN} {
+	encode gzip
+
+	# API: /api/health -> api /health. The api service is internal-only;
+	# Caddy is the single public door.
+	handle /api/* {
+		uri strip_prefix /api
+		reverse_proxy api:8000
+	}
+
+	# The Next.js website (dataset pages) is Phase D — it does not exist yet.
+	# Until then say so plainly instead of proxying to a service that isn't there.
+	handle {
+		respond "BharatData: the website is not built yet. The API is under /api (try /api/health)." 200
+	}
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

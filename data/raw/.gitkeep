@@ -1,0 +1,2 @@
+# Raw zone root. Every fetch lands in data/raw/<slug>/<UTC timestamp>.json
+# with a .meta.json sidecar. Contents are gitignored (data, not code).
