@@ -10,12 +10,14 @@ pyyaml>=6.0,<7
 pydantic>=2.5,<3
 # Fetcher: HTTP client for the data.gov.in resource API.
 requests>=2.31,<3
-# Public API service (tonight: /health only).
+# Public API service (/health and the admin fetch-run log so far).
 fastapi>=0.110,<1
 # ASGI server that runs the FastAPI app inside the api container.
 uvicorn>=0.29,<1
 # Ingest worker: task queue on the Redis broker (same pattern as CSV Doctor).
 celery[redis]>=5.4,<6
+# Run log + registry sync: Postgres driver (fetch_runs, datasets).
+psycopg2-binary>=2.9,<3
 
 # --- dev / test --------------------------------------------------------------
 pytest>=8.0,<10
@@ -25,3 +27,7 @@ responses>=0.25,<1
 httpx>=0.27,<1
 # Parses db/schema.sql with the real PostgreSQL parser (syntax check in the test suite).
 pglast>=7,<9
+# Freezes the clock so the test can prove a Beat entry fires at its cron time.
+freezegun>=1.5,<2
+# Real throwaway Postgres for the run-log / registry-sync / admin-endpoint tests (no mocked DB).
+pgserver>=0.1.4,<1

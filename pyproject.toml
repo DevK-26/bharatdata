@@ -16,6 +16,7 @@ dependencies = [
     "fastapi>=0.110,<1",
     "uvicorn>=0.29,<1",
     "celery[redis]>=5.4,<6",
+    "psycopg2-binary>=2.9,<3",
 ]
 
 [project.optional-dependencies]
@@ -24,6 +25,8 @@ dev = [
     "responses>=0.25,<1",
     "httpx>=0.27,<1",
     "pglast>=7,<9",
+    "freezegun>=1.5,<2",
+    "pgserver>=0.1.4,<1",
 ]
 
 [tool.setuptools.dynamic]

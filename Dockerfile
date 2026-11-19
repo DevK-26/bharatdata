@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir .
 COPY registry ./registry
 
 # Never run as root inside the container.
-RUN useradd --create-home --uid 1000 bharat && mkdir -p /data/raw && chown bharat /data/raw
+RUN useradd --create-home --uid 1000 bharat && mkdir -p /data/raw /data/beat && chown bharat /data/raw /data/beat
 USER bharat
 
 EXPOSE 8000

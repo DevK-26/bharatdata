@@ -5,8 +5,12 @@
 # STATUS: written and syntax-validated; never brought up with `docker compose up`
 # in the sandbox it was written in. Treat the first real `up` as the real test.
 #
-# Not here yet (see BUILD-SPRINT.md): `web` (Next.js, Phase D) and a Celery Beat
-# scheduler (Phase B). Do not add them until that code exists.
+# Not here yet (see BUILD-SPRINT.md): `web` (Next.js, Phase D). Do not add it
+# until that code exists. Run exactly ONE `beat` (two would double-fire every fetch).
+#
+# First boot: the datasets table is filled by the ingest task itself (it upserts
+# the dataset's registry entry before logging a run). To populate the catalogue
+# up front:  docker compose run --rm ingest python -m bharatdata.sync_registry
 services:
   caddy:
     image: caddy:2-alpine
@@ -32,6 +36,8 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-bharatdata}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-bharatdata}
       REDIS_URL: redis://redis:6379/0
+      # Guards /admin/*. Unset = the admin endpoints answer 503 (fail closed).
+      BHARATDATA_ADMIN_TOKEN: ${BHARATDATA_ADMIN_TOKEN:-}
     expose:
       - "8000"
     healthcheck:
@@ -63,6 +69,23 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
+
+  beat:
+    # Celery Beat: fires the fetch tasks. Its schedule is generated from
+    # registry/*.yaml (refresh_cron) at start-up; a broken registry stops it
+    # loudly. Needs only Redis — it never touches Postgres or the raw zone.
+    build:
+      context: .
+    restart: unless-stopped
+    command: ["celery", "-A", "bharatdata.ingest.worker", "beat", "--loglevel=info", "-s", "/data/beat/celerybeat-schedule"]
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      # Beat's last-run state, so a restart does not re-fire or skip runs.
+      - beat_data:/data/beat
+    depends_on:
       redis:
         condition: service_started
 
@@ -100,3 +123,4 @@ volumes:
   pg_data:
   redis_data:
   raw_data:
+  beat_data:

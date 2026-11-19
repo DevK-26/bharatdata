@@ -11,12 +11,16 @@ D = Days 16–21, E = Days 22–24.
 
 ## Needs Khushi herself (Claude cannot do these)
 
-1. **Free data.gov.in personal API key.** Log in at data.gov.in > My Account
+1. **Free data.gov.in personal API key.** *(OUTSTANDING — needed at Phase C.)* Log in at data.gov.in > My Account
    and copy the key into `.env` as `DATA_GOV_IN_API_KEY`. Needed at the start
    of Phase C (resource-id verification, first real fetch). The public sample
    key returns at most 10 records and is not enough.
-2. **Create the GitHub repo under `DevK-26`** when ready to push. Nothing has
-   been pushed; this folder is not even a git repository yet.
+2. ~~**Create the GitHub repo under `DevK-26`**~~ — **DONE.** `DevK-26/bharatdata`
+   exists and Phase A is pushed. (This working folder is still not a git
+   checkout; pushing happens separately.) Nothing for Khushi to do here.
+
+**Still outstanding: item 1 (the API key)** — not needed for B1; it is needed at
+the start of Phase C.
 
 (Later, Phase E: the domain name and the Oracle VM — same ones CSV Doctor uses.)
 
@@ -49,16 +53,59 @@ live data.gov.in behaviour.
 
 ## Phase B — Ingestion core + cleaning framework (Days 3–8)
 
-**B1. Scheduler and run log** (BLUEPRINT Days 3–5)
-- Celery Beat schedule generated from each entry's `refresh_cron`; add the
-  `beat` service to compose.
-- Write a `fetch_runs` row for every fetch (running → succeeded/failed, with
-  `raw_paths`, record counts and the error text). A failed fetch must be
-  visible, not silent. Small admin page (or JSON endpoint) listing recent
-  runs and failures.
-- Sync `registry/*.yaml` into the `datasets` table.
-- Tests: scheduled task fires at the cron time (frozen clock); a failing
-  fetch leaves a `failed` row; Postgres tests against a throwaway server.
+**B1. Scheduler and run log** (BLUEPRINT Days 3–5) — DONE, 2026-11-19
+
+What exists:
+- **Beat schedule from the registry** (`ingest/schedule.py`, installed in
+  `ingest/worker.py`): one `fetch-<slug>` entry per `registry/*.yaml`, cron =
+  that file's `refresh_cron`, UTC. No dataset or cron is written by hand in
+  `src/`. A broken registry stops the worker/beat at start-up. `beat` service
+  added to `docker-compose.yml` (state on a `beat_data` volume; run exactly one).
+- **Run log** (`ingest/runlog.py`, `worker.run_logged_fetch`): every fetch writes
+  a `fetch_runs` row — `running` (committed before any HTTP) → `succeeded` with
+  `raw_paths`, `records_fetched`, `pages_fetched`, or `failed` with the error
+  text (pages already stored before the failure stay listed). The exception is
+  then re-raised, so the Celery task state is FAILURE too. The task upserts its
+  dataset's catalogue row first, so a scheduled run needs no manual sync.
+- **Admin endpoint** `GET /admin/fetch-runs` (`api/main.py`): newest first,
+  filters `status`, `dataset`, `limit`. Guarded by the `X-Admin-Token` header
+  against `BHARATDATA_ADMIN_TOKEN`; with no token configured it answers 503
+  (fail closed), because Caddy exposes the api publicly.
+- **Registry sync** (`sync_registry.py`): `python -m bharatdata.sync_registry`
+  upserts every YAML into `datasets`; idempotent (an unchanged row is not even
+  written, so `updated_at` only moves on real change); never deletes.
+
+Verification (own re-run, 2026-11-19): `109 passed` — the 65 Phase A tests plus
+44 new, against a real throwaway Postgres (`pgserver`), all HTTP mocked.
+- Schedule: 5 entries = 5 YAML files, crons compared with values parsed straight
+  from the YAML; editing one YAML cron changes exactly that entry; 5 bad crons
+  rejected by the loader; hard-coded slugs/crons in `src/` forbidden by a test.
+- Clock (freezegun + Celery's real `Scheduler.tick`): a task fires at 02:30:00
+  and not at 02:29:59, not twice, and again next day; the weekly `imd-rainfall`
+  ("0 3 * * 1") fires on Monday 03:00 UTC and not on Sunday/Tuesday.
+- Run log: succeeded row (path, 3 records, 2 pages); HTTP 500 with retries
+  exhausted (6 requests on the default policy) → `failed` row with the error and
+  FAILURE task state; failure on page 2 keeps page 1's path; `running` row seen
+  from a second connection mid-fetch; finished rows cannot be overwritten.
+- Registry sync: 5 inserted, re-run 5 unchanged, one edit → 1 updated; a failed
+  sync rolls back entirely; CLI exit codes; a real `python -m` subprocess.
+- Mutation check: no failure logging, swallowing the exception, a schedule that
+  ignores the YAML, an upsert that always writes, a schedule missing one dataset
+  — each made tests fail.
+- A real `celery beat` process started and loaded the generated schedule.
+
+Not verified: `docker compose` (the `beat` service and volume permissions are
+only checked structurally, by a test), a real Redis broker (no Redis in the
+sandbox — beat→worker delivery over Redis is untested; the clock test drives the
+real scheduler against an in-process app), and anything against live data.gov.in.
+
+Things to know:
+- All five datasets are still `TODO_VERIFY`, so until Phase C every scheduled
+  run writes a `failed` row ("not fetchable"). That is deliberate: it is visible
+  in `/admin/fetch-runs` rather than silently skipped.
+- A worker killed mid-fetch leaves a `running` row; nothing reaps those yet.
+- The Postgres-backed tests need `pgserver`. If run as root from a root-only
+  checkout it cannot load its libraries; see README "Running the tests".
 
 **B2. Cleaning framework** (BLUEPRINT Days 6–8)
 - Wire CSV Doctor's parse/profile/score as a library (read
