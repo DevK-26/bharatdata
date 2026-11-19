@@ -1,0 +1,155 @@
+{
+  "note": "SYNTHETIC DEMO DATA for the fetcher demo and tests. Not from data.gov.in.",
+  "records": [
+    {
+      "id": "1",
+      "commodity": "FIXTURE-COMMODITY-01",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1001"
+    },
+    {
+      "id": "2",
+      "commodity": "FIXTURE-COMMODITY-02",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1002"
+    },
+    {
+      "id": "3",
+      "commodity": "FIXTURE-COMMODITY-03",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1003"
+    },
+    {
+      "id": "4",
+      "commodity": "FIXTURE-COMMODITY-04",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1004"
+    },
+    {
+      "id": "5",
+      "commodity": "FIXTURE-COMMODITY-05",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1005"
+    },
+    {
+      "id": "6",
+      "commodity": "FIXTURE-COMMODITY-06",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1006"
+    },
+    {
+      "id": "7",
+      "commodity": "FIXTURE-COMMODITY-07",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1007"
+    },
+    {
+      "id": "8",
+      "commodity": "FIXTURE-COMMODITY-08",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1008"
+    },
+    {
+      "id": "9",
+      "commodity": "FIXTURE-COMMODITY-09",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1009"
+    },
+    {
+      "id": "10",
+      "commodity": "FIXTURE-COMMODITY-10",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1010"
+    },
+    {
+      "id": "11",
+      "commodity": "FIXTURE-COMMODITY-11",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1011"
+    },
+    {
+      "id": "12",
+      "commodity": "FIXTURE-COMMODITY-12",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1012"
+    },
+    {
+      "id": "13",
+      "commodity": "FIXTURE-COMMODITY-13",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1013"
+    },
+    {
+      "id": "14",
+      "commodity": "FIXTURE-COMMODITY-14",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1014"
+    },
+    {
+      "id": "15",
+      "commodity": "FIXTURE-COMMODITY-15",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1015"
+    },
+    {
+      "id": "16",
+      "commodity": "FIXTURE-COMMODITY-16",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1016"
+    },
+    {
+      "id": "17",
+      "commodity": "FIXTURE-COMMODITY-17",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1017"
+    },
+    {
+      "id": "18",
+      "commodity": "FIXTURE-COMMODITY-18",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1018"
+    },
+    {
+      "id": "19",
+      "commodity": "FIXTURE-COMMODITY-19",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1019"
+    },
+    {
+      "id": "20",
+      "commodity": "FIXTURE-COMMODITY-20",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1020"
+    },
+    {
+      "id": "21",
+      "commodity": "FIXTURE-COMMODITY-21",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1021"
+    },
+    {
+      "id": "22",
+      "commodity": "FIXTURE-COMMODITY-22",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1022"
+    },
+    {
+      "id": "23",
+      "commodity": "FIXTURE-COMMODITY-23",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1023"
+    },
+    {
+      "id": "24",
+      "commodity": "FIXTURE-COMMODITY-24",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1024"
+    },
+    {
+      "id": "25",
+      "commodity": "FIXTURE-COMMODITY-25",
+      "market": "FIXTURE-MARKET",
+      "modal_price": "1025"
+    }
+  ]
+}
