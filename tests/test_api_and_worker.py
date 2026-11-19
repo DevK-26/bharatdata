@@ -1,4 +1,8 @@
-"""Minimal API app and Celery task. HTTP to data.gov.in is mocked."""
+"""Minimal API app and Celery task. HTTP to data.gov.in is mocked.
+
+The fetch task now writes the fetch_runs log, so its tests need a database:
+the throwaway-Postgres fixtures (``pg_dsn``) from conftest provide a real one.
+Run-log behaviour in depth: test_runlog.py."""
 
 from __future__ import annotations
 
@@ -20,9 +24,9 @@ def test_health_endpoint():
     assert response.json() == {"status": "ok", "service": "bharatdata-api", "version": __version__}
 
 
-def test_openapi_lists_only_health():
+def test_openapi_lists_only_health_and_the_admin_run_log():
     paths = TestClient(app).get("/openapi.json").json()["paths"]
-    assert list(paths) == ["/health"]
+    assert sorted(paths) == ["/admin/fetch-runs", "/health"]
 
 
 def _registry_with_verified_fixture(tmp_path):
@@ -39,7 +43,8 @@ def _registry_with_verified_fixture(tmp_path):
     return registry
 
 
-def test_celery_task_fetches_a_registry_dataset(tmp_path, monkeypatch, mocked_http):
+def test_celery_task_fetches_a_registry_dataset(tmp_path, monkeypatch, mocked_http, pg_dsn):
+    monkeypatch.setenv("DATABASE_URL", pg_dsn)
     monkeypatch.setenv("BHARATDATA_REGISTRY_DIR", str(_registry_with_verified_fixture(tmp_path)))
     monkeypatch.setenv("BHARATDATA_RAW_DIR", str(tmp_path / "raw"))
     monkeypatch.setenv("DATA_GOV_IN_API_KEY", "test-key")

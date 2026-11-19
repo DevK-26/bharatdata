@@ -3,9 +3,13 @@ call goes through ``responses`` (which fails on any unmocked URL)."""
 
 from __future__ import annotations
 
+import itertools
 import re
+import shutil
+import tempfile
 from pathlib import Path
 
+import psycopg2
 import pytest
 import responses
 
@@ -66,3 +70,56 @@ class RecordingSleep:
 @pytest.fixture
 def no_sleep() -> RecordingSleep:
     return RecordingSleep()
+
+
+# --- real throwaway Postgres -------------------------------------------------
+# Same approach as scripts/verify_schema_pg.py: `pgserver` bundles real Postgres
+# binaries and runs a private server in a temp dir. No mocked database anywhere.
+# NOTE: pgserver drops privileges to an unprivileged user when run as root, which
+# cannot read libraries inside a root-only checkout. In such a sandbox install it
+# somewhere world-readable and prepend it:  PYTHONPATH=/tmp/bd-pgserver pytest
+# (see README "Running the tests").
+
+_db_counter = itertools.count(1)
+
+
+@pytest.fixture(scope="session")
+def pg_server():
+    import pgserver
+
+    # pgserver's cleanup() only stops the server; the ~50 MB data dir is ours to remove.
+    pgdata = tempfile.mkdtemp(prefix="bdpg-tests-")
+    server = pgserver.get_server(pgdata)
+    try:
+        yield server
+    finally:
+        server.cleanup()
+        shutil.rmtree(pgdata, ignore_errors=True)
+
+
+@pytest.fixture
+def pg_dsn(pg_server) -> str:
+    """DSN of a brand-new database with db/schema.sql loaded (one per test)."""
+    name = f"bd_test_{next(_db_counter)}"
+    admin = psycopg2.connect(pg_server.get_uri())
+    admin.autocommit = True
+    try:
+        admin.cursor().execute(f"CREATE DATABASE {name}")
+        dsn = pg_server.get_uri(database=name)
+        loader = psycopg2.connect(dsn)
+        try:
+            with loader, loader.cursor() as cur:  # `with conn` commits; it does not close
+                cur.execute((REPO_ROOT / "db" / "schema.sql").read_text(encoding="utf-8"))
+        finally:
+            loader.close()
+        yield dsn
+        admin.cursor().execute(f"DROP DATABASE {name} WITH (FORCE)")
+    finally:
+        admin.close()
+
+
+@pytest.fixture
+def pg_conn(pg_dsn):
+    conn = psycopg2.connect(pg_dsn)
+    yield conn
+    conn.close()

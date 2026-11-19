@@ -6,8 +6,9 @@ Not part of the pytest suite and not a project dependency: it needs
 Usage:  python scripts/verify_schema_pg.py [db/schema.sql]
 Exits non-zero if the schema fails to load or any probe behaves unexpectedly.
 """
-import sys, pgserver, tempfile, psycopg2
-db = pgserver.get_server(tempfile.mkdtemp(prefix="bdpg"))
+import sys, shutil, pgserver, tempfile, psycopg2
+pgdata = tempfile.mkdtemp(prefix="bdpg")
+db = pgserver.get_server(pgdata)
 conn = psycopg2.connect(db.get_uri()); conn.autocommit = True
 cur = conn.cursor()
 schema_path = sys.argv[1] if len(sys.argv) > 1 else "db/schema.sql"
@@ -57,5 +58,6 @@ bumped = cur.fetchone()[0]
 print("PASS" if bumped else "FAIL", ": updated_at trigger bumps on UPDATE")
 failures += not bumped
 db.cleanup()
+shutil.rmtree(pgdata, ignore_errors=True)  # cleanup() only stops the server
 print(f"{failures} unexpected result(s)")
 sys.exit(1 if failures else 0)
